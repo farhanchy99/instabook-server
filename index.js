@@ -38,6 +38,14 @@ async function run(){
             res.send(postData);
         });
 
+        app.get('/topposts', async(req, res) =>{
+            query ={}
+            const tp = await posts.find(query).sort({
+                likes:-1
+            }).toArray()
+            res.send(tp);
+        });
+
         app.get('/posts/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -45,19 +53,27 @@ async function run(){
             res.send(post);
         });
 
+        //Posts Comments
         app.post('/comments', async(req, res)=>{
             const commentUp = req.body;
             const result = await comments.insertOne(commentUp);
             res.send(result);
         });
 
-        app.get('/comments', async(req, res) =>{
-            query ={}
-            const commentData = await comments.find(query).sort({
+        app.get('/comments', async(req, res)=>{
+            let query ={};
+            if(req.query.postId){
+                query={
+                    postId: req.query.postId
+                }
+            }
+            const cursor = comments.find(query)
+            .sort({
                 time:-1
-            }).toArray()
+            })
+            const commentData = await cursor.toArray();
             res.send(commentData);
-        });
+        })
 
 
 //AllUser Collection
